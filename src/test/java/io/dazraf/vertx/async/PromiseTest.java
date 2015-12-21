@@ -29,10 +29,22 @@ public class PromiseTest {
 
     final CountDownLatch latch = new CountDownLatch(1);
 
+    // in this example we execute a pipeline/graph of async operations
+
+    // these are using {@link io.vertx.core.eventbus.EventBus#send} but could use any other async API in vert.x
+
+    // each message sent is being called a task. For each task we expect a response before we can continue further down the pipeline
+
+    // the graph of executions are
+    // run 1 and 2 in parallel
+    // when completed successfully , run 3
+    // when completed successfully, run 4 and 5 in parallel
+
     // lets run taks '1', '2' in parallel
     all(
-      // the general form is: async return type, function to call, parameters
+      // the general form is: async return type, function to call, parameters ...
       create(JsonObject.class, vertx.eventBus()::send, ADDRESS, createJsonObjectWithId(1)).peek(this::writeResponse),
+      // ... note also that here we call the peek() function which has similar semantics to JDK Stream.peek
       create(JsonObject.class, vertx.eventBus()::send, ADDRESS, createJsonObjectWithId(2)).peek(this::writeResponse)
     )
       // here we wait for '1' and '2' to finish before running '3'
@@ -42,7 +54,7 @@ public class PromiseTest {
         create(JsonObject.class, vertx.eventBus()::send, ADDRESS, createJsonObjectWithId(4)).peek(this::writeResponse),
         create(JsonObject.class, vertx.eventBus()::send, ADDRESS, createJsonObjectWithId(5)).peek(this::writeResponse)
       )
-      // we now execute the entire built pipeline, capturing the state of the last task
+      // we now execute the entire pipeline, capturing the state of the last task
       .eval(ar -> {
         latch.countDown();
         LOGGER.info("all done");
