@@ -193,10 +193,6 @@ public class PromiseTests {
 
     MongoClient client = MongoClient.createShared(rule.vertx(), mongoConfig);
 
-    client.save("books", new JsonObject().put("title", "Finnegans Wake"), ar -> {
-      async.complete();
-    });
-
     Promises.forAsyncResultType(String.class)
       .invoke(callback -> client.save("books", new JsonObject().put("title", "Finnegans Wake"), callback))
       .invoke(callback -> client.save("books", new JsonObject().put("title", "Nineteen Eighty-Four"), callback))
