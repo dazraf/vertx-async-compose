@@ -19,7 +19,7 @@ public interface Promise<Result> {
     this.execute(asyncResult-> {});
   }
 
-  default Promise<Result> catchException(Consumer<Throwable> errorHandler) {
+  default Promise<Result> whenFailed(Consumer<Throwable> errorHandler) {
     return callback -> this.execute(asyncResult -> {
       if (asyncResult.failed()) {
         errorHandler.accept(asyncResult.cause());
@@ -29,7 +29,7 @@ public interface Promise<Result> {
     });
   }
 
-  default Promise<Result> invoke(Consumer<Handler<AsyncResult<Result>>> implementation) {
+  default Promise<Result> then(Consumer<Handler<AsyncResult<Result>>> implementation) {
     return callback -> {
       this.execute(asyncResult -> {
         if (asyncResult.succeeded()) {
@@ -41,7 +41,7 @@ public interface Promise<Result> {
     };
   }
 
-  default Promise<Result> invoke(BiConsumer<AsyncResult<Result>, Handler<AsyncResult<Result>>> implementation) {
+  default Promise<Result> then(BiConsumer<AsyncResult<Result>, Handler<AsyncResult<Result>>> implementation) {
     return callback -> {
       this.execute(asyncResult -> {
         if (asyncResult.succeeded()) {
@@ -62,19 +62,19 @@ public interface Promise<Result> {
     };
   }
 
-  default <MessageType> ChainedPromiseBuilder<Result, Message<MessageType>> thenOnEventBusType(Class<MessageType> messageType) {
+  default <MessageType> ChainedPromiseBuilder<Result, Message<MessageType>> eventBusMessage() {
     return new ChainedPromiseBuilder<>(this);
   }
 
-  default <NextResult> ChainedPromiseBuilder<Result, NextResult> thenForAsyncResultType(Class<NextResult> nextResultType) {
+  default <NextResult> ChainedPromiseBuilder<Result, NextResult> asyncResult() {
     return new ChainedPromiseBuilder<>(this);
   }
 
-  default <NextResult> ChainedRawPromiseBuilder<Result, NextResult> thenForCallbackResultType(Class<NextResult> callBackResultType) {
+  default <NextResult> ChainedRawPromiseBuilder<Result, NextResult> callback() {
     return new ChainedRawPromiseBuilder<>(this);
   }
 
-  default ChainedHttpClientRequestPromiseBuilder<Result> thenForHttpClientRequest() {
+  default ChainedHttpClientRequestPromiseBuilder<Result> httpClientRequest() {
     return new ChainedHttpClientRequestPromiseBuilder<>(this);
   }
 }

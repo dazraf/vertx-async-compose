@@ -8,5 +8,5 @@ import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface PromiseBuilder<Result> {
-  Promise<Result> invoke(Consumer<Handler<AsyncResult<Result>>> implementation);
+  Promise<Result> then(Consumer<Handler<AsyncResult<Result>>> implementation);
 }

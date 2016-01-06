@@ -47,9 +47,8 @@ public class PromiseTests {
     // a little ping service
     eventBus.consumer(ADDRESS).handler(message -> message.reply(message.body()));
 
-    Promises
-      .forEventBusMessageType(JsonObject.class)
-      .invoke(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 1), callback))
+    Promises.<JsonObject>eventBusMessage()
+      .then(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 1), callback))
 
       .execute(ar -> {
         context.assertTrue(ar.succeeded());
@@ -67,8 +66,8 @@ public class PromiseTests {
     // a little ping service
     eventBus.consumer(ADDRESS).handler(message -> message.reply(message.body()));
 
-    Promises
-      .forEventBusMessageType(JsonObject.class).invoke(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 1), callback))
+    Promises.<JsonObject>eventBusMessage()
+      .then(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 1), callback))
       .peek(ar -> {
         context.assertTrue(ar.succeeded());
         context.assertEquals(1, ar.result().body().getInteger(ID));
@@ -91,9 +90,9 @@ public class PromiseTests {
     // a little ping service
     eventBus.consumer(ADDRESS).handler(message -> message.fail(0, "will always fail"));
 
-    Promises
-      .forEventBusMessageType(JsonObject.class).invoke(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 1), callback))
-      .catchException(throwable -> {
+    Promises.<JsonObject>eventBusMessage()
+      .then(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 1), callback))
+      .whenFailed(throwable -> {
         LOGGER.info("sending of message failed as expected", throwable);
         async.complete();
       })
@@ -113,13 +112,12 @@ public class PromiseTests {
     // a little ping service
     eventBus.consumer(ADDRESS).handler(message -> message.reply(message.body()));
 
-    Promises
-      .forEventBusMessageType(JsonObject.class)
-      .invoke(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 1), callback))
+    Promises.<JsonObject>eventBusMessage()
+      .then(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 1), callback))
       .peek(ar -> context.assertEquals(ar.result().body().getInteger(ID), nextExpectedResult.getAndIncrement()))
 
-      .thenOnEventBusType(JsonObject.class)
-      .invoke(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 2), callback))
+      .<JsonObject>eventBusMessage()
+      .then(callback -> eventBus.send(ADDRESS, new JsonObject().put(ID, 2), callback))
       .peek(ar -> context.assertEquals(ar.result().body().getInteger(ID), nextExpectedResult.getAndIncrement()))
 
       .execute(ar -> async.complete());
@@ -127,7 +125,6 @@ public class PromiseTests {
 
   @Test
   public void httpAPITest(TestContext context) throws IOException {
-
     Async async = context.async();
 
     // create a HTTP server on a free port
@@ -141,15 +138,15 @@ public class PromiseTests {
     // now create a HTTP client
     final HttpClient httpClient = rule.vertx().createHttpClient(new HttpClientOptions().setDefaultHost("localhost").setDefaultPort(port));
 
-    Promises
-      .forAsyncResultType(HttpServer.class).invoke(httpServer::listen) // start the web server
-      .thenForCallbackResultType(HttpClientResponse.class).invoke(callback -> httpClient.getNow(URI, callback)) // invoke the web server
+    Promises.<HttpServer>asyncResult()
+      .then(httpServer::listen) // start the web server
+      .<HttpClientResponse>callback()
+      .then(callback -> httpClient.getNow(URI, callback)) // invoke the web server
       .execute(ar -> async.complete());
   }
 
   @Test
   public void httpAPIExceptionTest(TestContext context) throws IOException {
-
     Async async = context.async();
 
     // pick a random free port
@@ -159,8 +156,8 @@ public class PromiseTests {
     final HttpClient httpClient = rule.vertx().createHttpClient(new HttpClientOptions().setDefaultHost("localhost").setDefaultPort(port));
 
     Promises
-      .onHttpClientRequest(callback -> httpClient.get(URI, callback))
-      .catchException(throwable -> {
+      .httpClientRequest(callback -> httpClient.get(URI, callback))
+      .whenFailed(throwable -> {
         // this is what we expected
         context.assertEquals(ConnectException.class, throwable.getClass());
         async.complete();
@@ -186,18 +183,16 @@ public class PromiseTests {
       mongodExecutable.stop();
     });
 
-
     JsonObject mongoConfig = new JsonObject();
     mongoConfig.put("connection_string", "mongodb://localhost:" + port);
     mongoConfig.put("db_name", "db1");
 
     MongoClient client = MongoClient.createShared(rule.vertx(), mongoConfig);
 
-    Promises.forAsyncResultType(String.class)
-      .invoke(callback -> client.save("books", new JsonObject().put("title", "Finnegans Wake"), callback))
-      .invoke(callback -> client.save("books", new JsonObject().put("title", "Nineteen Eighty-Four"), callback))
+    Promises.<String>asyncResult()
+      .then(callback -> client.save("books", new JsonObject().put("title", "Finnegans Wake"), callback))
+      .then(callback -> client.save("books", new JsonObject().put("title", "Nineteen Eighty-Four"), callback))
       .execute(ar -> async.complete());
-
   }
 
   private int getFreePort() throws IOException {

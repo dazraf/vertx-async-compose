@@ -8,7 +8,7 @@ import io.vertx.core.http.HttpClientResponse;
 import java.util.function.Function;
 
 public class HttpClientRequestPromiseBuilder {
-  public Promise<HttpClientResponse> invoke(Function<Handler<HttpClientResponse>, HttpClientRequest> implementation) {
+  public Promise<HttpClientResponse> then(Function<Handler<HttpClientResponse>, HttpClientRequest> implementation) {
     return callback -> {
       try {
         implementation.apply(result -> {

@@ -12,19 +12,19 @@ import java.util.function.Function;
 
 public class Promises {
 
-  public static <Result> PromiseBuilder<Message<Result>> forEventBusMessageType(Class<Result> messageType) {
+  public static <Result> PromiseBuilder<Message<Result>> eventBusMessage() {
     return implementation -> implementation::accept;
   }
 
-  public static <Result> PromiseBuilder<Result> forAsyncResultType(Class<Result> resultType) {
+  public static <Result> PromiseBuilder<Result> asyncResult() {
     return implementation -> implementation::accept;
   }
 
-  public static <Result> RawPromiseBuilder<Result> forCallbackType(Class<Result> callbackType) {
+  public static <Result> RawPromiseBuilder<Result> callback() {
     return new RawPromiseBuilder<>();
   }
 
-  public static Promise<HttpClientResponse> onHttpClientRequest(Function<Handler<HttpClientResponse>, HttpClientRequest> implementation) {
-    return new HttpClientRequestPromiseBuilder().invoke(implementation);
+  public static Promise<HttpClientResponse> httpClientRequest(Function<Handler<HttpClientResponse>, HttpClientRequest> implementation) {
+    return new HttpClientRequestPromiseBuilder().then(implementation);
   }
 }

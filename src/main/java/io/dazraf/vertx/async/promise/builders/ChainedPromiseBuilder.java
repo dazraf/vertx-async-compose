@@ -16,7 +16,7 @@ public class ChainedPromiseBuilder<PreviousResult, Result> {
   }
 
   @SuppressWarnings("unchecked")
-  public Promise<Result> invoke(Consumer<Handler<AsyncResult<Result>>> implementation) {
+  public Promise<Result> then(Consumer<Handler<AsyncResult<Result>>> implementation) {
     return callback -> previous.execute(asyncResult -> {
        if (asyncResult.succeeded()) {
          implementation.accept(callback);
@@ -27,7 +27,7 @@ public class ChainedPromiseBuilder<PreviousResult, Result> {
   }
 
   @SuppressWarnings("unchecked")
-  public Promise<Result> invoke(BiConsumer<AsyncResult<PreviousResult>, Handler<AsyncResult<Result>>> implementation) {
+  public Promise<Result> then(BiConsumer<AsyncResult<PreviousResult>, Handler<AsyncResult<Result>>> implementation) {
     return callback -> previous.execute(asyncResult -> implementation.accept(asyncResult, callback));
   }
 

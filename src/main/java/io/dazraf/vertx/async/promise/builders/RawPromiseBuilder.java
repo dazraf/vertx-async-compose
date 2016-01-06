@@ -9,7 +9,7 @@ import static io.dazraf.vertx.async.promise.builders.AsyncResultWrapper.failed;
 import static io.dazraf.vertx.async.promise.builders.AsyncResultWrapper.success;
 
 public class RawPromiseBuilder<CallbackResultType> {
-  public Promise<CallbackResultType> invoke(Consumer<Handler<CallbackResultType>> implementation) {
+  public Promise<CallbackResultType> then(Consumer<Handler<CallbackResultType>> implementation) {
     return callback -> {
       try {
         implementation.accept(result -> {

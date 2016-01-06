@@ -18,7 +18,7 @@ public class ChainedRawPromiseBuilder<PreviousResult, Result> {
   }
 
   @SuppressWarnings("unchecked")
-  public Promise<Result> invoke(Consumer<Handler<Result>> implementation) {
+  public Promise<Result> then(Consumer<Handler<Result>> implementation) {
     return callback ->
       previousPromise.execute(asyncResult -> {
         if (asyncResult.succeeded()) {
@@ -36,7 +36,7 @@ public class ChainedRawPromiseBuilder<PreviousResult, Result> {
   }
 
   @SuppressWarnings("unchecked")
-  public Promise<Result> invoke(BiConsumer<AsyncResult<PreviousResult>, Handler<Result>> implementation) {
+  public Promise<Result> then(BiConsumer<AsyncResult<PreviousResult>, Handler<Result>> implementation) {
     return callback -> {
       previousPromise.execute(asyncResult -> {
         try {

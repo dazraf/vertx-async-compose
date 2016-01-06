@@ -21,7 +21,7 @@ public class ChainedHttpClientRequestPromiseBuilder<PreviousResult> {
   }
 
 
-  public Promise<HttpClientResponse> invoke(Function<Handler<HttpClientResponse>, HttpClientRequest> implementation) {
+  public Promise<HttpClientResponse> then(Function<Handler<HttpClientResponse>, HttpClientRequest> implementation) {
     return callback -> {
       this.previousPromise.execute(asyncResult -> {
         if (asyncResult.succeeded()) {
@@ -41,7 +41,7 @@ public class ChainedHttpClientRequestPromiseBuilder<PreviousResult> {
     };
   }
 
-  public Promise<HttpClientResponse> invoke(BiFunction<AsyncResult<PreviousResult>, Handler<HttpClientResponse>, HttpClientRequest> implementation) {
+  public Promise<HttpClientResponse> then(BiFunction<AsyncResult<PreviousResult>, Handler<HttpClientResponse>, HttpClientRequest> implementation) {
     return callback -> {
       this.previousPromise.execute(asyncResult -> {
           try {
